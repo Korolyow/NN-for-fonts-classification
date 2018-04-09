@@ -102,8 +102,8 @@ def fully_connected(inputs, out_dim, scope_name='fc'):
     return out
 
 
-learning_rate = 0.0001
-batch_size = 64
+learning_rate = 0.01
+batch_size = 128
 n_epochs = 12
 n_classes = 10
 global_step = tf.train.get_or_create_global_step()  
@@ -136,15 +136,6 @@ pool_1 = maxpool(scope_name='maxpool_1',
                  padding='VALID')
 
 
-#dropout_1 = tf.nn.dropout(x=pool_1, keep_prob=0.4, name='dropout_1', )
-
-'''
-pool_2 = maxpool(scope_name='maxpool_2', 
-                 inputs=pool_1, 
-                 ksize=2, 
-                 stride=2, 
-                 padding='VALID')
-'''
 
 flatten = pool_1.shape[1] * pool_1.shape[2] * pool_1.shape[3]
 pool_1 = tf.reshape(pool_1, [-1, flatten])
@@ -161,8 +152,8 @@ logits = fully_connected(inputs=dropout_2, out_dim=n_classes, scope_name='logits
 
 
 with tf.name_scope('loss'):
-    entropy = tf.nn.softmax_cross_entropy_with_logits_v2(labels= y, logits= logits, )
-    loss = tf.reduce_mean(entropy)
+    entropy = tf.nn.softmax_cross_entropy_with_logits_v2(labels= y, logits= logits)
+    loss = tf.cast(tf.reduce_mean(entropy), tf.float32)
 
 correct_pred = tf.equal(tf.argmax(logits, 1), tf.argmax(y, 1))    
 accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
@@ -195,7 +186,7 @@ with tf.Session() as sess:
         print('Train accuracy:', acc)
         print('-'*30)
         
-    print('Final score:', accuracy_score(y_test, sess.run(y_hat, {X: X_test})))
+    print('Final score:', accuracy_score(y_test, sess.run(logits, {X: X_test})))
 
 
 
